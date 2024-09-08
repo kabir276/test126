@@ -3,38 +3,40 @@ import pdf from 'pdf-parse';
 
 export async function POST(req: NextRequest) {
   if (req.method === 'POST') {
+  try {
+    console.log('Received POST request');
+    const formData = await req.formData();
+    console.log('FormData received');
+    const file = formData.get('file') as File | null;
 
-    try {
-      const formData = await req.formData();
-      const file = formData.get('file') as File | null;
-
-      if (!file) {
-        return NextResponse.json({ error: 'No file uploaded' }, { status: 400 });
-      }
-
-      const buffer = Buffer.from(await file.arrayBuffer());
-      const extractedText = await extractTextFromPDF(buffer);
-
-      const response = new NextResponse(extractedText, {
-        status: 200,
-        headers: {
-          'Content-Disposition': `attachment; filename="extracted_text.txt"`,
-          'Content-Type': 'text/plain',
-        },
-      });
-
-      return response;
-
-    } catch (error) {
-      console.error('Error:', error);
-      return NextResponse.json({ error: 'An error occurred while processing the PDF' }, { status: 500 });
+    if (!file) {
+      console.log('No file uploaded');
+      return NextResponse.json({ error: 'No file uploaded' }, { status: 400 });
     }
-  } else {
-    return NextResponse.json("Error adding data to spreadsheet");
 
+    console.log('File received:', file.name);
+    const buffer = Buffer.from(await file.arrayBuffer());
+    console.log('Buffer created');
+    const extractedText = await extractTextFromPDF(buffer);
+    console.log('Text extracted successfully');
+
+    return new NextResponse(extractedText, {
+      status: 200,
+      headers: {
+        'Content-Disposition': `attachment; filename="extracted_text.txt"`,
+        'Content-Type': 'text/plain',
+      },
+    });
+  } catch (error) {
+    console.error('Error:', error);
+    return NextResponse.json({ error: 'An error occurred while processing the PDF' }, { status: 500 });
   }
 }
+else {
+  return NextResponse.json("Error adding data to spreadsheet");
 
+}
+}
 async function extractTextFromPDF(buffer: Buffer): Promise<string> {
   try {
     const data = await pdf(buffer);

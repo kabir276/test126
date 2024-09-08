@@ -30,8 +30,7 @@ export default function PDFConverter() {
     try {
       const response = await fetch('/api/convert', {
         method: 'POST',
-        headers: { "Content-Type": "application/json" },
-        body: formData,
+        body: formData
       });
       console.log(formData)
 
